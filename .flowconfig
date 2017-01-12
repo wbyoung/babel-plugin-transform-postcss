@@ -1,0 +1,10 @@
+[ignore]
+dist/.*
+coverage/.*
+scripts/.*
+
+[include]
+
+[libs]
+
+[options]

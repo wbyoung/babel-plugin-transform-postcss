@@ -1,0 +1,6 @@
+{
+  "rules": {
+    "no-unused-expressions": "off",
+    "flowtype/require-return-type": ["error", "always", { "excludeArrowFunctions": true }],
+  }
+}

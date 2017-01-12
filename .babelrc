@@ -1,0 +1,19 @@
+{
+  "presets": [
+    ["env", {
+      "targets": {
+        "node": "current"
+      }
+    }]
+  ],
+  "plugins": [
+    "transform-flow-strip-types"
+  ],
+  "env": {
+    "coverage": {
+      "plugins": [
+        "istanbul",
+      ]
+    }
+  }
+}
