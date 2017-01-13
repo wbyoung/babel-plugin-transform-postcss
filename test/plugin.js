@@ -62,15 +62,14 @@ describe('babel-plugin-transform-postcss', () => {
     const [executable, args, opts] = childProcess.execFileSync.getCall(0).args;
     const [jsExecutable, socketPath, jsonString] = args;
     const json = JSON.parse(jsonString);
-    const { cssFile, configFile } = json;
+    const { cssFile } = json;
 
     expect(executable).to.match(/node$/);
     expect(args.length).to.eql(3);
     expect(jsExecutable).to.endWith('/postcss-client.js');
     expect(socketPath).to.match(/^\/tmp.*\.sock$/);
     expect(cssFile).to.endWith(`/${filename}`);
-    expect(configFile).to.endWith('/postcss.config.js');
-    expect(json).to.have.keys('cssFile', 'configFile');
+    expect(json).to.have.keys('cssFile');
     expect(opts).to.eql({
       env: process.env, // eslint-disable-line no-process-env
     });

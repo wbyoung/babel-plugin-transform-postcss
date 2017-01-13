@@ -2,8 +2,11 @@
 
 import net from 'net';
 import fs from 'fs';
+import path from 'path';
 import util from 'util';
 import makeDebug from 'debug';
+import postcss from 'postcss';
+import loadConfig from 'postcss-load-config';
 import type { Socket, Server } from 'net';
 
 const debug = makeDebug('babel-plugin-transform-postcss');
@@ -30,27 +33,20 @@ const main = async function main(socketPath: string): Promise<Server> {
 
     connection.on('end', async (): Promise<void> => {
       try {
-        let config, tokens;
-        const { configFile, cssFile } = JSON.parse(data);
-
-        // eslint-disable-next-line global-require, $FlowFixMe
-        try { config = require(configFile); }
-        catch (err) {
-          error(`Could not resolve config file at ${configFile}`);
-          connection.end();
-
-          return;
-        }
+        let tokens;
+        const { cssFile } = JSON.parse(data);
 
         const extractModules = (_, resultTokens: any) => {
           tokens = resultTokens;
         };
+        const { plugins, postcssOpts } =
+          await loadConfig({ extractModules }, path.dirname(cssFile));
 
         // eslint-disable-next-line no-sync
         const source = fs.readFileSync(cssFile, 'utf8');
-        const runner = config({ extractModules });
+        const runner = postcss(plugins);
 
-        await runner.process(source);
+        await runner.process(source, postcssOpts);
 
         connection.end(JSON.stringify(tokens));
       }

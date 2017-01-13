@@ -56,7 +56,7 @@ export default function transformPostCSS({ types: t }: any): any {
 
   return {
     visitor: {
-      CallExpression(path: any, { file, opts }: any) {
+      CallExpression(path: any, { file }: any) {
         const { callee: { name: calleeName }, arguments: args } = path.node;
 
         if (calleeName !== 'require' ||
@@ -73,8 +73,7 @@ export default function transformPostCSS({ types: t }: any): any {
 
           const requiringFile = file.opts.filename;
           const cssFile = resolve(dirname(requiringFile), stylesheetPath);
-          const configFile = resolve(opts.config);
-          const data = JSON.stringify({ cssFile, configFile });
+          const data = JSON.stringify({ cssFile });
           const execArgs = [clientExcutable, socketPath, data];
           const result = execFileSync(nodeExecutable, execArgs, {
             env: process.env, // eslint-disable-line no-process-env

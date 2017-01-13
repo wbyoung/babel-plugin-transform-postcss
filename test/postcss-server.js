@@ -20,6 +20,7 @@ import {
 import { expect } from 'chai';
 
 import { join } from 'path';
+import path from 'path';
 import fs from 'fs';
 import net from 'net';
 import { Server } from 'net';
@@ -81,7 +82,6 @@ describe('postcss-server', () => {
     const sendMessage = async (
       json: {
         cssFile: string,
-        configFile: string,
       }
     ): Promise<string> => {
       let response = '';
@@ -107,7 +107,6 @@ describe('postcss-server', () => {
     it('accepts JSON details and extracts PostCSS modules', async () => {
       const response = await sendMessage({
         cssFile: join(__dirname, 'fixtures', 'simple.css'),
-        configFile: join(__dirname, 'fixtures', 'postcss.config.js'),
       });
 
       expect(JSON.parse(response)).to.eql({ simple: '_simple_jvai8_1' });
@@ -116,7 +115,6 @@ describe('postcss-server', () => {
     it('fails gracefully for invalid CSS', async () => {
       const response = await sendMessage({
         cssFile: join(__dirname, 'fixtures', 'invalid.css'),
-        configFile: join(__dirname, 'fixtures', 'postcss.config.js'),
       });
 
       expect(response).to.eql('');
@@ -128,7 +126,6 @@ describe('postcss-server', () => {
       beforeEach(async () => {
         response = await sendMessage({
           cssFile: join(__dirname, 'fixtures', 'nofile'),
-          configFile: join(__dirname, 'fixtures', 'postcss.config.js'),
         });
       });
       beforeEach(closeStderr);
@@ -146,6 +143,9 @@ describe('postcss-server', () => {
     describe('with a missing config file', () => {
       let response;
 
+      beforeEach(() => stub(path, 'dirname', () => process.cwd()));
+      afterEach(() => path.dirname.restore());
+
       beforeEach(async () => {
         response = await sendMessage({
           cssFile: join(__dirname, 'fixtures', 'simple.css'),
@@ -160,7 +160,7 @@ describe('postcss-server', () => {
 
       it('logs a useful message', () => {
         expect(fs.readFileSync(testOutput, 'utf8'))
-          .to.match(/could not resolve config/i);
+          .to.match(/No PostCSS Config/i);
       });
     });
   });
