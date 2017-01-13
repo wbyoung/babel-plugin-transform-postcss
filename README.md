@@ -55,7 +55,7 @@ Create a [`postcss.config.js`][postcss-load-config]:
 module.exports = (ctx) => ({
   plugins: [
     require('postcss-modules')({
-      getJSON: ctx.extractModules || () => {},
+      getJSON: ctx.extractModules || (() => {}),
     }),
   ],
 });
