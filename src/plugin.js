@@ -80,11 +80,20 @@ export default function transformPostCSS({ types: t }: any): any {
           }).toString('utf8');
           const tokens = JSON.parse(result || '{}');
 
-          path.replaceWith(new t.ObjectExpression(
+          const expression = path.findParent((test) => (
+              test.isVariableDeclaration() ||
+              test.isExpressionStatement()
+            ));
+
+          expression.addComment(
+            'trailing', ` @related-file ${stylesheetPath}`, true
+          );
+
+          path.replaceWith(t.objectExpression(
             Object.keys(tokens).map(
-              (token) => new t.ObjectProperty(
-                new t.StringLiteral(token),
-                new t.StringLiteral(tokens[token])
+              (token) => t.objectProperty(
+                t.stringLiteral(token),
+                t.stringLiteral(tokens[token])
               )
             )
           ));

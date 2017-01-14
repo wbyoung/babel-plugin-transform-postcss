@@ -1,3 +1,3 @@
 'use strict';
 
-var styles = {};
+var styles = {}; // @related-file ./simple.css

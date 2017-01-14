@@ -77,6 +77,10 @@ this transform. We recommend:
 - [`postcss-cli`][postcss-cli] (v3 or later)
 - [`gulp-postcsssrc`][gulp-postcssrc]
 
+Finally, it's worth noting that this transform also adds a comment to the
+generated code indicating the related CSS file so that it can be processed by
+other tools, i.e. [`relateify`][relateify].
+
 ### PostCSS Load Config Context
 
 #### `extractModules(_: any, modules: object)`
@@ -90,6 +94,12 @@ The function accepts two arguments. The transform uses only the
 second value passed to the function. That value is the object value that
 replaces the `import`/`require`.
 
+## Using with Browserify & Watchify
+
+This will work well with the [`babelify`][babelify] transform, but if you're
+using [`watchify`][watchify], you will want to add the [`relateify`][relateify]
+transform in order to ensure that changes to CSS files rebuild the appropriate
+JS files.
 
 ## Prior Art
 
@@ -113,6 +123,9 @@ This project is distributed under the MIT license.
 [css-modules-transform]: https://github.com/michalkvasnicak/babel-plugin-css-modules-transform
 [css-modules-require-hook]: https://github.com/css-modules/css-modules-require-hook
 [gulp-postcssrc]: https://github.com/michael-ciniawsky/gulp-postcssrc
+[babelify]: https://github.com/babel/babelify
+[watchify]: https://github.com/substack/watchify
+[relateify]: https://github.com/wbyoung/relateify
 
 [travis-image]: http://img.shields.io/travis/wbyoung/babel-plugin-transform-postcss.svg?style=flat
 [travis-url]: http://travis-ci.org/wbyoung/babel-plugin-transform-postcss
