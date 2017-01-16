@@ -40,6 +40,13 @@
   "bugs": {
     "url": "https://github.com/wbyoung/babel-plugin-transform-postcss/issues"
   },
+  "keywords": [
+    "postcss",
+    "postcss-modules",
+    "babel",
+    "babel-transform",
+    "css-modules"
+  ],
   "homepage": "https://github.com/wbyoung/babel-plugin-transform-postcss",
   "devDependencies": {
     "babel-cli": "^6.18.0",
