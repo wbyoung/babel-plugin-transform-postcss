@@ -2,4 +2,4 @@
 /dist/
 /coverage/
 /.nyc_output/
-/test/fixtures/
+/test/fixtures*/

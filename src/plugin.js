@@ -4,51 +4,40 @@ import {
   dirname,
   extname,
   resolve,
-  join,
 } from 'path';
 
-import {
-  execFileSync,
-  spawn,
-} from 'child_process';
+import fs from 'fs';
+import util from 'util';
+import postcss from 'postcss';
+import loadConfig from 'postcss-load-config';
+import deasync from 'deasync';
 
-// note: socket path is important to keep short as it will be truncated if it
-// exceeds certain platform limits. for this reason, we're writing to /tmp
-// instead of using os.tmpdir (which can, on platforms like darwin, be quite
-// long & per-process).
-const projectId = process.cwd().toLowerCase().replace(/[^a-z]/g, '');
-const socketName = `bptp-${projectId}.sock`;
-const socketPath = join('/tmp', socketName);
+const sync = <T>(promise: Promise<T>): T => {
+  let success: { result: T }, error: Error;
 
-const nodeExecutable = process.argv[0];
-const clientExcutable = join(__dirname, 'postcss-client.js');
-const serverExcutable = join(__dirname, 'postcss-server.js');
+  promise.then(
+    (result: T) => { success = { result }; },
+    (err: Error) => { error = err; },
+  );
+  deasync.loopWhile(() => !(success || error));
 
-let server;
+  if (!success) {
+    throw error;
+  }
 
-const startServer = () => {
-  server = spawn(nodeExecutable, [serverExcutable, socketPath], {
-    env: process.env, // eslint-disable-line no-process-env
-    stdio: 'inherit',
-  });
-
-  server.unref();
+  return success.result;
 };
 
-const stopServer = () => {
-  if (!server) { return; }
+const streams = { stderr: process.stderr }; // overwritable by tests
+const error = (...args: any) => {
+  let prefix = 'babel-plugin-transform-postcss: ';
+  const message = util.format(...args);
 
-  server.kill();
-  server = null;
-  process.removeListener('exit', stopServer);
-};
+  if (streams.stderr.isTTY) {
+    prefix = `\x1b[31m${prefix}\x1b[0m`;
+  }
 
-const launchServer = () => {
-  if (server) { return; }
-
-  startServer();
-
-  process.on('exit', stopServer);
+  streams.stderr.write(`${prefix}${message}\n`);
 };
 
 export default function transformPostCSS({ types: t }: any): any {
@@ -69,16 +58,30 @@ export default function transformPostCSS({ types: t }: any): any {
         const stylesheetExtension = extname(stylesheetPath);
 
         if (extensions.indexOf(stylesheetExtension) !== -1) {
-          launchServer();
 
+          let config, source;
+          let tokens = {};
           const requiringFile = file.opts.filename;
           const cssFile = resolve(dirname(requiringFile), stylesheetPath);
-          const data = JSON.stringify({ cssFile });
-          const execArgs = [clientExcutable, socketPath, data];
-          const result = execFileSync(nodeExecutable, execArgs, {
-            env: process.env, // eslint-disable-line no-process-env
-          }).toString('utf8');
-          const tokens = JSON.parse(result || '{}');
+          const extractModules = (_, resultTokens: any) => {
+            tokens = resultTokens;
+          };
+
+          try {
+            config = sync(loadConfig({ extractModules }, dirname(cssFile)));
+            source = // eslint-disable-next-line no-sync
+              fs.readFileSync(cssFile, 'utf8');
+          }
+          catch (err) {
+            error(err.stack);
+
+            return;
+          }
+
+          const { plugins, postcssOpts } = config;
+          const runner = postcss(plugins);
+
+          sync(runner.process(source, postcssOpts));
 
           const expression = path.findParent((test) => (
               test.isVariableDeclaration() ||
@@ -104,6 +107,5 @@ export default function transformPostCSS({ types: t }: any): any {
 }
 
 export {
-  startServer,
-  stopServer,
+  streams as _streams,
 };
