@@ -63,14 +63,13 @@
     "mocha": "^3.2.0",
     "nyc": "^10.0.0",
     "postcss": "^5.2.9",
-    "postcss-modules": "^0.6.2",
-    "sinon": "^1.17.7",
-    "sinon-chai": "^2.8.0"
+    "postcss-modules": "^0.6.2"
   },
   "peerDependencies": {
     "postcss": "^5.2.9"
   },
   "dependencies": {
+    "deasync": "^0.1.9",
     "debug": "^2.6.0",
     "postcss-load-config": "^1.1.0"
   }
