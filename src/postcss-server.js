@@ -39,14 +39,17 @@ const main = async function main(socketPath: string): Promise<Server> {
         const extractModules = (_, resultTokens: any) => {
           tokens = resultTokens;
         };
-        const { plugins, postcssOpts } =
+        const { plugins, options: postcssOpts } =
           await loadConfig({ extractModules }, path.dirname(cssFile));
 
         // eslint-disable-next-line no-sync
         const source = fs.readFileSync(cssFile, 'utf8');
         const runner = postcss(plugins);
 
-        await runner.process(source, postcssOpts);
+        await runner.process(source, Object.assign({
+          from: cssFile,
+          to: cssFile, // eslint-disable-line id-length
+        }, postcssOpts));
 
         connection.end(JSON.stringify(tokens));
       }

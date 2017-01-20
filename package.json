@@ -65,7 +65,8 @@
     "postcss": "^5.2.9",
     "postcss-modules": "^0.6.2",
     "sinon": "^1.17.7",
-    "sinon-chai": "^2.8.0"
+    "sinon-chai": "^2.8.0",
+    "string-hash": "^1.1.1"
   },
   "peerDependencies": {
     "postcss": "^5.2.9"
