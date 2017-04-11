@@ -44,12 +44,13 @@ describe('babel-plugin-transform-postcss', () => {
     expect(childProcess.spawn).to.have.been.calledOnce;
 
     const [executable, args, opts] = childProcess.spawn.getCall(0).args;
-    const [jsExecutable, socketPath] = args;
+    const [jsExecutable, socketPath, socketTmp] = args;
 
     expect(executable).to.match(/node$/);
-    expect(args.length).to.eql(2);
+    expect(args.length).to.eql(3);
     expect(jsExecutable).to.endWith('/postcss-server.js');
     expect(socketPath).to.match(/^\/tmp.*\.sock$/);
+    expect(socketTmp).to.match(/^\/tmp/);
     expect(opts).to.eql({
       env: process.env, // eslint-disable-line no-process-env
       stdio: 'inherit',

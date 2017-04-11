@@ -16,9 +16,10 @@ import {
 // exceeds certain platform limits. for this reason, we're writing to /tmp
 // instead of using os.tmpdir (which can, on platforms like darwin, be quite
 // long & per-process).
-const projectId = process.cwd().toLowerCase().replace(/[^a-z]/g, '');
+const projectId = process.cwd().toLowerCase().replace(/[^a-z]/ig, '');
 const socketName = `bptp-${projectId}.sock`;
 const socketPath = join('/tmp', socketName);
+const tmpPath = join('/tmp', `bptp-${projectId}`);
 
 const nodeExecutable = process.argv[0];
 const clientExcutable = join(__dirname, 'postcss-client.js');
@@ -27,7 +28,7 @@ const serverExcutable = join(__dirname, 'postcss-server.js');
 let server;
 
 const startServer = () => {
-  server = spawn(nodeExecutable, [serverExcutable, socketPath], {
+  server = spawn(nodeExecutable, [serverExcutable, socketPath, tmpPath], {
     env: process.env, // eslint-disable-line no-process-env
     stdio: 'inherit',
   });

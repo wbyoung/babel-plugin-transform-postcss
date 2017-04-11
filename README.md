@@ -101,6 +101,14 @@ using [`watchify`][watchify], you will want to add the [`relateify`][relateify]
 transform in order to ensure that changes to CSS files rebuild the appropriate
 JS files.
 
+## Caching
+
+This module caches the results of the compilation of CSS files and stores the
+cache in a directory under `/tmp/bptp-UNIQUE_ID`. The cache is only invalidated
+when the CSS file contents change and not when the `postcss.config.js` file
+changes (due to limitations at the time of implementation). Try removing the
+cache if you're not seeing expected changes.
+
 ## Prior Art
 
 This plugin is based of the work of:

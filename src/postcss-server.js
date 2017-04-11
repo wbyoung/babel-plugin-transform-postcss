@@ -4,6 +4,7 @@ import net from 'net';
 import fs from 'fs';
 import path from 'path';
 import util from 'util';
+import crypto from 'crypto';
 import makeDebug from 'debug';
 import postcss from 'postcss';
 import loadConfig from 'postcss-load-config';
@@ -11,6 +12,9 @@ import type { Socket, Server } from 'net';
 
 const debug = makeDebug('babel-plugin-transform-postcss');
 const streams = { stderr: process.stderr }; // overwritable by tests
+const md5 = (data: string) => (
+  crypto.createHash('md5').update(data).digest('hex')
+);
 const error = (...args: any) => {
   let prefix = 'babel-plugin-transform-postcss: ';
   const message = util.format(...args);
@@ -22,7 +26,18 @@ const error = (...args: any) => {
   streams.stderr.write(`${prefix}${message}\n`);
 };
 
-const main = async function main(socketPath: string): Promise<Server> {
+const main = async function main(
+  socketPath: string,
+  tmpPath: string,
+): Promise<Server> {
+
+  try { fs.mkdirSync(tmpPath); } // eslint-disable-line no-sync
+  catch (err) {
+    if (err.code !== 'EEXIST') {
+      throw err;
+    }
+  }
+
   const options = { allowHalfOpen: true };
   const server = net.createServer(options, (connection: Socket) => {
     let data: string = '';
@@ -33,8 +48,27 @@ const main = async function main(socketPath: string): Promise<Server> {
 
     connection.on('end', async (): Promise<void> => {
       try {
-        let tokens;
+        let tokens, cache;
         const { cssFile } = JSON.parse(data);
+        const cachePath =
+          `${path.join(tmpPath, cssFile.replace(/[^a-z]/ig, ''))}.cache`;
+        const source = // eslint-disable-next-line no-sync
+          fs.readFileSync(cssFile, 'utf8');
+        const hash = md5(source);
+
+        // eslint-disable-next-line no-sync
+        try { cache = JSON.parse(fs.readFileSync(cachePath, 'utf8')); }
+        catch (err) {
+          if (err.code !== 'ENOENT') {
+            throw err;
+          }
+        }
+
+        if (cache && cache.hash === hash) {
+          connection.end(JSON.stringify(cache.tokens));
+
+          return;
+        }
 
         const extractModules = (_, resultTokens: any) => {
           tokens = resultTokens;
@@ -42,14 +76,20 @@ const main = async function main(socketPath: string): Promise<Server> {
         const { plugins, options: postcssOpts } =
           await loadConfig({ extractModules }, path.dirname(cssFile));
 
-        // eslint-disable-next-line no-sync
-        const source = fs.readFileSync(cssFile, 'utf8');
         const runner = postcss(plugins);
 
         await runner.process(source, Object.assign({
           from: cssFile,
           to: cssFile, // eslint-disable-line id-length
         }, postcssOpts));
+
+        cache = {
+          hash,
+          tokens,
+        };
+
+        // eslint-disable-next-line no-sync
+        fs.writeFileSync(cachePath, JSON.stringify(cache));
 
         connection.end(JSON.stringify(tokens));
       }
