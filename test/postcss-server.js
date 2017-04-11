@@ -27,10 +27,11 @@ import { Server } from 'net';
 
 const testSocket = join(__dirname, 'tmp.sock');
 const testOutput = join(__dirname, 'tmp.out');
+const testTmp = join(__dirname, 'tmp');
 
 describe('postcss-server', () => {
   let server, originalStderr;
-  const invokeMain = async () => { server = await main(testSocket); };
+  const invokeMain = async () => { server = await main(testSocket, testTmp); };
   const closeServer = async() => {
     await new Promise((resolve: () => void, reject: (Error) => void) => {
       server.close((err: ?Error) => {
@@ -51,10 +52,17 @@ describe('postcss-server', () => {
   beforeEach(() => {
     originalStderr = streams.stderr;
     streams.stderr = fs.createWriteStream(testOutput);
+    fs.mkdirSync(testTmp);
   });
   afterEach(() => {
     streams.stderr = originalStderr;
     fs.unlinkSync(testOutput);
+
+    for (const file of fs.readdirSync(testTmp)) {
+      fs.unlinkSync(path.join(testTmp, file));
+    }
+
+    fs.rmdirSync(testTmp);
   });
 
   describe('main(...testArgs)', () => {
@@ -79,6 +87,7 @@ describe('postcss-server', () => {
       expect(fs.existsSync(testSocket)).to.be.false;
     });
 
+    const simpleCSSFile = join(__dirname, 'fixtures', 'simple.css');
     const sendMessage = async (
       json: {
         cssFile: string,
@@ -106,7 +115,7 @@ describe('postcss-server', () => {
 
     it('accepts JSON details and extracts PostCSS modules', async () => {
       const response = await sendMessage({
-        cssFile: join(__dirname, 'fixtures', 'simple.css'),
+        cssFile: simpleCSSFile,
       });
 
       expect(JSON.parse(response)).to.eql({ simple: '_simple_jvai8_1' });
@@ -118,6 +127,50 @@ describe('postcss-server', () => {
       });
 
       expect(response).to.eql('');
+    });
+
+    describe('with a cached result', () => {
+      beforeEach(() => {
+        const name = simpleCSSFile.replace(/[^a-z]/ig, '');
+
+        fs.writeFileSync(path.join(testTmp, `${name}.cache`), JSON.stringify({
+          hash: 'e773de66362a5c384076b75ac292038b',
+          tokens: { simple: '_simple_cached' },
+        }));
+      });
+
+      it('accepts JSON details and extracts PostCSS modules', async () => {
+        const response = await sendMessage({
+          cssFile: simpleCSSFile,
+        });
+
+        expect(JSON.parse(response)).to.eql({ simple: '_simple_cached' });
+      });
+    });
+
+    describe('with an invalid cache', () => {
+      let response;
+
+      beforeEach(() => {
+        const name = simpleCSSFile.replace(/[^a-z]/ig, '');
+
+        fs.writeFileSync(path.join(testTmp, `${name}.cache`), 'not-json');
+      });
+      beforeEach(async () => {
+        response = await sendMessage({
+          cssFile: simpleCSSFile,
+        });
+      });
+      beforeEach(closeStderr);
+
+      it('does not contain a response', () => {
+        expect(response).to.eql('');
+      });
+
+      it('logs a useful message', () => {
+        expect(fs.readFileSync(testOutput, 'utf8'))
+          .to.match(/JSON/i);
+      });
     });
 
     describe('with a missing CSS file', () => {
@@ -143,7 +196,7 @@ describe('postcss-server', () => {
     describe('with a missing config file', () => {
       let response;
 
-      beforeEach(() => stub(path, 'dirname', () => process.cwd()));
+      beforeEach(() => stub(path, 'dirname').callsFake(() => process.cwd()));
       afterEach(() => path.dirname.restore());
 
       beforeEach(async () => {
@@ -167,7 +220,7 @@ describe('postcss-server', () => {
 
   describe('when listen fails', () => {
     beforeEach(() => {
-      stub(Server.prototype, 'listen', function errorHandler() {
+      stub(Server.prototype, 'listen').callsFake(function errorHandler() {
         this.emit('error', new Error('test failure'));
       });
     });
@@ -218,4 +271,19 @@ describe('postcss-server', () => {
     });
 
   });
+
+  describe('when making a directory fails', () => {
+    beforeEach(() => { stub(fs, 'mkdirSync').throws('Error with no code'); });
+    afterEach(() => { fs.mkdirSync.restore(); });
+
+    it('errors when invoking main', async () => {
+      let error;
+
+      try { await invokeMain(); }
+      catch (err) { error = err; }
+
+      expect(error).to.match(/Error with no code/);
+    });
+  });
+
 });
