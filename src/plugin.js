@@ -16,7 +16,7 @@ import {
 // exceeds certain platform limits. for this reason, we're writing to /tmp
 // instead of using os.tmpdir (which can, on platforms like darwin, be quite
 // long & per-process).
-const projectId = process.cwd().toLowerCase().replace(/[^a-z]/g, '');
+const projectId = process.cwd().toLowerCase().replace(/[^a-z]/ig, '');
 const socketName = `bptp-${projectId}.sock`;
 const socketPath = join('/tmp', socketName);
 
