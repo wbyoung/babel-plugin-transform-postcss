@@ -61,7 +61,7 @@
     "eslint-plugin-flowtype": "^2.29.2",
     "flow-bin": "^0.46.0",
     "mocha": "^3.2.0",
-    "nyc": "^10.0.0",
+    "nyc": "^11.0.1",
     "postcss": "^5.2.9",
     "postcss-modules": "^0.8.0",
     "sinon": "^2.0.0",
