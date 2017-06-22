@@ -11,6 +11,7 @@ import {
 import {
   read,
   transform,
+  babelNoModules,
 } from './helpers';
 
 import {
@@ -127,6 +128,48 @@ describe('babel-plugin-transform-postcss', () => {
     it('does not launch a client', () => {
       expect(childProcess.execFileSync).to.not.have.been.called;
     });
+  });
+
+  describe('when transforming import.no.name.js', () => {
+    beforeEach(() => transform('import.no.name.js', babelNoModules));
+
+    it('does not launch the server', () => {
+      expect(childProcess.spawn).to.not.have.been.called;
+    });
+
+    it('does not launch a client', () => {
+      expect(childProcess.execFileSync).to.not.have.been.called;
+    });
+  });
+
+  describe('when transforming import.nocss.js', () => {
+    beforeEach(() => transform('import.nocss.js', babelNoModules));
+
+    it('does not launch the server', () => {
+      expect(childProcess.spawn).to.not.have.been.called;
+    });
+
+    it('does not launch a client', () => {
+      expect(childProcess.execFileSync).to.not.have.been.called;
+    });
+  });
+
+  describe('when transforming import.js without modules', () => {
+    let result;
+
+    beforeEach(async () => {
+      result = await transform('import.js', babelNoModules);
+    });
+
+    it('launches the server', testServerLaunched);
+    it('launches a client', () => testClientLaunched('simple.css'));
+    it('compiles correctly', async () => {
+      expect(result).to.eql(
+          (await read('import.no.modules.expected.js')).trim()
+      );
+    });
+
+    shouldBehaveLikeSeverIsRunning();
   });
 
   describe('when the server has been started started', () => {

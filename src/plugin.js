@@ -52,8 +52,28 @@ const launchServer = () => {
   process.on('exit', stopServer);
 };
 
+const extensions = ['.css'];
+
+const getStylesFromStylesheet = (stylesheetPath: string, file: any): any => {
+  const stylesheetExtension = extname(stylesheetPath);
+
+  if (extensions.indexOf(stylesheetExtension) !== -1) {
+    launchServer();
+    const requiringFile = file.opts.filename;
+    const cssFile = resolve(dirname(requiringFile), stylesheetPath);
+    const data = JSON.stringify({ cssFile });
+    const execArgs = [clientExcutable, socketPath, data];
+    const result = execFileSync(nodeExecutable, execArgs, {
+      env: process.env, // eslint-disable-line no-process-env
+    }).toString('utf8');
+
+    return JSON.parse(result || '{}');
+  }
+
+  return undefined;
+};
+
 export default function transformPostCSS({ types: t }: any): any {
-  const extensions = ['.css'];
 
   return {
     visitor: {
@@ -67,20 +87,9 @@ export default function transformPostCSS({ types: t }: any): any {
         }
 
         const [{ value: stylesheetPath }] = args;
-        const stylesheetExtension = extname(stylesheetPath);
+        const tokens = getStylesFromStylesheet(stylesheetPath, file);
 
-        if (extensions.indexOf(stylesheetExtension) !== -1) {
-          launchServer();
-
-          const requiringFile = file.opts.filename;
-          const cssFile = resolve(dirname(requiringFile), stylesheetPath);
-          const data = JSON.stringify({ cssFile });
-          const execArgs = [clientExcutable, socketPath, data];
-          const result = execFileSync(nodeExecutable, execArgs, {
-            env: process.env, // eslint-disable-line no-process-env
-          }).toString('utf8');
-          const tokens = JSON.parse(result || '{}');
-
+        if (tokens !== undefined) {
           const expression = path.findParent((test) => (
               test.isVariableDeclaration() ||
               test.isExpressionStatement()
@@ -98,6 +107,33 @@ export default function transformPostCSS({ types: t }: any): any {
               )
             )
           ));
+        }
+      },
+      ImportDeclaration(path: any, { file }: any) {
+        const stylesheetPath = path.node.source.value;
+
+        if (path.node.specifiers.length !== 1) {
+          return;
+        }
+        const tokens = getStylesFromStylesheet(stylesheetPath, file);
+
+        if (tokens) {
+          const styles = t.objectExpression(
+            Object.keys(tokens).map(
+                (token) => t.objectProperty(
+                    t.stringLiteral(token),
+                    t.stringLiteral(tokens[token])
+                )
+            )
+          );
+          /* eslint-disable new-cap */
+
+          const variableDeclaration = t.VariableDeclaration('var',
+              [t.VariableDeclarator(path.node.specifiers[0].local, styles)]);
+
+          /* eslint-enable new-cap */
+          path.addComment('trailing', ` @related-file ${stylesheetPath}`, true);
+          path.replaceWith(variableDeclaration);
         }
       },
     },
