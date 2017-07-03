@@ -73,7 +73,7 @@ describe('postcss-client', () => {
       });
     });
 
-    afterEach(async () => {
+    afterEach(async() => {
       await new Promise((resolve: () => void, reject: (Error) => void) => {
         fs.unlinkSync(testSocket);
         server.close((err: ?Error) => {
@@ -84,7 +84,7 @@ describe('postcss-client', () => {
     });
 
     describe('main(...testArgs)', () => {
-      beforeEach(async () => {
+      beforeEach(async() => {
         const write = new Promise((resolve: () => void) => {
           streams.stdout.on('finish', () => resolve());
         });
@@ -107,7 +107,7 @@ describe('postcss-client', () => {
   });
 
   describe('main(...testArgs)', () => {
-    beforeEach(async () => { await main(testSocket, 'client message'); });
+    beforeEach(async() => { await main(testSocket, 'client message'); });
 
     it('attempts to re-connect', () => {
       expect(net.connect).to.have.been.calledTwice;

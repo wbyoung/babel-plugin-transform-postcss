@@ -46,7 +46,7 @@ const main = async function main(
       data += chunk.toString('utf8');
     });
 
-    connection.on('end', async (): Promise<void> => {
+    connection.on('end', async(): Promise<void> => {
       try {
         let tokens, cache;
         const { cssFile } = JSON.parse(data);
@@ -139,7 +139,7 @@ const main = async function main(
 
 /* istanbul ignore if */
 if ((require: any).main === module) {
-  (async (): Promise<void> => {
+  (async(): Promise<void> => {
     try { await main(...process.argv.slice(2)); }
     catch (err) { process.stderr.write(`${err.stack}\n`); process.exit(1); }
   })();

@@ -91,9 +91,9 @@ export default function transformPostCSS({ types: t }: any): any {
 
         if (tokens !== undefined) {
           const expression = path.findParent((test) => (
-              test.isVariableDeclaration() ||
+            test.isVariableDeclaration() ||
               test.isExpressionStatement()
-            ));
+          ));
 
           expression.addComment(
             'trailing', ` @related-file ${stylesheetPath}`, true
@@ -120,16 +120,16 @@ export default function transformPostCSS({ types: t }: any): any {
         if (tokens) {
           const styles = t.objectExpression(
             Object.keys(tokens).map(
-                (token) => t.objectProperty(
-                    t.stringLiteral(token),
-                    t.stringLiteral(tokens[token])
-                )
+              (token) => t.objectProperty(
+                t.stringLiteral(token),
+                t.stringLiteral(tokens[token])
+              )
             )
           );
           /* eslint-disable new-cap */
 
           const variableDeclaration = t.VariableDeclaration('var',
-              [t.VariableDeclarator(path.node.specifiers[0].local, styles)]);
+            [t.VariableDeclarator(path.node.specifiers[0].local, styles)]);
 
           /* eslint-enable new-cap */
           path.addComment('trailing', ` @related-file ${stylesheetPath}`, true);
