@@ -65,7 +65,7 @@ const getStylesFromStylesheet = (stylesheetPath: string, file: any): any => {
     const execArgs = [clientExcutable, socketPath, data];
     const result = execFileSync(nodeExecutable, execArgs, {
       env: process.env, // eslint-disable-line no-process-env
-    }).toString('utf8');
+    }).toString();
 
     return JSON.parse(result || '{}');
   }
