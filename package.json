@@ -55,21 +55,21 @@
     "babel-plugin-transform-flow-strip-types": "^6.21.0",
     "babel-preset-env": "^1.1.8",
     "babel-register": "^6.18.0",
-    "chai": "^3.5.0",
+    "chai": "^4.0.2",
     "chai-string": "^1.3.0",
     "eslint": "^3.13.1",
     "eslint-plugin-flowtype": "^2.29.2",
-    "flow-bin": "^0.43.0",
+    "flow-bin": "^0.46.0",
     "mocha": "^3.2.0",
-    "nyc": "^10.0.0",
+    "nyc": "^11.0.1",
     "postcss": "^5.2.9",
-    "postcss-modules": "^0.6.2",
+    "postcss-modules": "^0.8.0",
     "sinon": "^2.0.0",
     "sinon-chai": "^2.8.0",
     "string-hash": "^1.1.1"
   },
   "peerDependencies": {
-    "postcss": "^5.2.9"
+    "postcss": "^6.0.0"
   },
   "dependencies": {
     "debug": "^2.6.0",

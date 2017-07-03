@@ -6,16 +6,24 @@ import * as babel from 'babel-core';
 
 const fixtures = path.join(__dirname, 'fixtures');
 
-export const transform = (filename: string): Promise<string> => {
+export const babelNoModules = {
+  presets: [ ['env', { modules: false, targets: { node: 'current' } }] ],
+};
+
+export const transform = (filename: string,
+                          babelOptionOverrides: ?{ [string]: mixed }
+                          ): Promise<string> => {
   const file = path.join(fixtures, filename);
-  const options = {
+
+  const options = Object.assign({
+    babelrc: false,
     presets: [ ['env', { targets: { node: 'current' } }] ],
     plugins: [
       ['../../src/plugin.js', {
         config: path.join(fixtures, 'postcss.config.js'),
       }],
     ],
-  };
+  }, babelOptionOverrides);
 
   return new Promise((resolve: (any) => void, reject: (Error) => void) => {
     babel.transformFile(file, options, (err: ?Error, result: any) => {
