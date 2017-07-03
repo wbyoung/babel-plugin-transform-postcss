@@ -44,7 +44,7 @@ const main = async function main(...args: string[]): Promise<void> {
 
 /* istanbul ignore if */
 if ((require: any).main === module) {
-  (async (): Promise<void> => {
+  (async(): Promise<void> => {
     try { await main(...process.argv.slice(2)); }
     catch (err) { process.stderr.write(`${err.stack}\n`); process.exit(1); }
   })();

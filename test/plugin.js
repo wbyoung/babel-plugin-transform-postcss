@@ -93,11 +93,11 @@ describe('babel-plugin-transform-postcss', () => {
   describe('when transforming require.js', () => {
     let result;
 
-    beforeEach(async () => { result = await transform('require.js'); });
+    beforeEach(async() => { result = await transform('require.js'); });
 
     it('launches the server', testServerLaunched);
     it('launches a client', () => testClientLaunched('simple.css'));
-    it('compiles correctly', async () => {
+    it('compiles correctly', async() => {
       expect(result).to.eql((await read('require.expected.js')).trim());
     });
 
@@ -107,11 +107,11 @@ describe('babel-plugin-transform-postcss', () => {
   describe('when transforming import.js', () => {
     let result;
 
-    beforeEach(async () => { result = await transform('import.js'); });
+    beforeEach(async() => { result = await transform('import.js'); });
 
     it('launches the server', testServerLaunched);
     it('launches a client', () => testClientLaunched('simple.css'));
-    it('compiles correctly', async () => {
+    it('compiles correctly', async() => {
       expect(result).to.eql((await read('import.expected.js')).trim());
     });
 
@@ -157,15 +157,15 @@ describe('babel-plugin-transform-postcss', () => {
   describe('when transforming import.js without modules', () => {
     let result;
 
-    beforeEach(async () => {
+    beforeEach(async() => {
       result = await transform('import.js', babelNoModules);
     });
 
     it('launches the server', testServerLaunched);
     it('launches a client', () => testClientLaunched('simple.css'));
-    it('compiles correctly', async () => {
+    it('compiles correctly', async() => {
       expect(result).to.eql(
-          (await read('import.no.modules.expected.js')).trim()
+        (await read('import.no.modules.expected.js')).trim()
       );
     });
 
@@ -181,9 +181,9 @@ describe('babel-plugin-transform-postcss', () => {
     let result;
 
     beforeEach(() => childProcess.execFileSync.returns(new Buffer('')));
-    beforeEach(async () => { result = await transform('require.js'); });
+    beforeEach(async() => { result = await transform('require.js'); });
 
-    it('compiles correctly', async () => {
+    it('compiles correctly', async() => {
       expect(result).to.eql((await read('require.expected.empty.js')).trim());
     });
   });

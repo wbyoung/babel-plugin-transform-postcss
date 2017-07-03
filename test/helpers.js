@@ -10,9 +10,10 @@ export const babelNoModules = {
   presets: [ ['env', { modules: false, targets: { node: 'current' } }] ],
 };
 
-export const transform = (filename: string,
-                          babelOptionOverrides: ?{ [string]: mixed }
-                          ): Promise<string> => {
+export const transform = (
+  filename: string,
+  babelOptionOverrides: ?{ [string]: mixed },
+): Promise<string> => {
   const file = path.join(fixtures, filename);
 
   const options = Object.assign({

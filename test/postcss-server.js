@@ -31,7 +31,7 @@ const testTmp = join(__dirname, 'tmp');
 
 describe('postcss-server', () => {
   let server, originalStderr;
-  const invokeMain = async () => { server = await main(testSocket, testTmp); };
+  const invokeMain = async() => { server = await main(testSocket, testTmp); };
   const closeServer = async() => {
     await new Promise((resolve: () => void, reject: (Error) => void) => {
       server.close((err: ?Error) => {
@@ -40,7 +40,7 @@ describe('postcss-server', () => {
       });
     });
   };
-  const closeStderr = async () => {
+  const closeStderr = async() => {
     const write = new Promise((resolve: () => void) => {
       streams.stderr.on('finish', () => resolve());
     });
@@ -88,7 +88,7 @@ describe('postcss-server', () => {
     });
 
     const simpleCSSFile = join(__dirname, 'fixtures', 'simple.css');
-    const sendMessage = async (
+    const sendMessage = async(
       json: {
         cssFile: string,
       }
@@ -113,7 +113,7 @@ describe('postcss-server', () => {
       return response;
     };
 
-    it('accepts JSON details and extracts PostCSS modules', async () => {
+    it('accepts JSON details and extracts PostCSS modules', async() => {
       const response = await sendMessage({
         cssFile: simpleCSSFile,
       });
@@ -121,7 +121,7 @@ describe('postcss-server', () => {
       expect(JSON.parse(response)).to.eql({ simple: '_simple_jvai8_1' });
     });
 
-    it('fails gracefully for invalid CSS', async () => {
+    it('fails gracefully for invalid CSS', async() => {
       const response = await sendMessage({
         cssFile: join(__dirname, 'fixtures', 'invalid.css'),
       });
@@ -139,7 +139,7 @@ describe('postcss-server', () => {
         }));
       });
 
-      it('accepts JSON details and extracts PostCSS modules', async () => {
+      it('accepts JSON details and extracts PostCSS modules', async() => {
         const response = await sendMessage({
           cssFile: simpleCSSFile,
         });
@@ -156,7 +156,7 @@ describe('postcss-server', () => {
 
         fs.writeFileSync(path.join(testTmp, `${name}.cache`), 'not-json');
       });
-      beforeEach(async () => {
+      beforeEach(async() => {
         response = await sendMessage({
           cssFile: simpleCSSFile,
         });
@@ -176,7 +176,7 @@ describe('postcss-server', () => {
     describe('with a missing CSS file', () => {
       let response;
 
-      beforeEach(async () => {
+      beforeEach(async() => {
         response = await sendMessage({
           cssFile: join(__dirname, 'fixtures', 'nofile'),
         });
@@ -199,7 +199,7 @@ describe('postcss-server', () => {
       beforeEach(() => stub(path, 'dirname').callsFake(() => process.cwd()));
       afterEach(() => path.dirname.restore());
 
-      beforeEach(async () => {
+      beforeEach(async() => {
         response = await sendMessage({
           cssFile: join(__dirname, 'fixtures', 'simple.css'),
           configFile: join(__dirname, 'fixtures', 'nofile'),
@@ -226,7 +226,7 @@ describe('postcss-server', () => {
     });
     afterEach(() => { Server.prototype.listen.restore(); });
 
-    it('fails to complete main(...testArgs)', async () => {
+    it('fails to complete main(...testArgs)', async() => {
       let error;
 
       try { await invokeMain(); }
@@ -276,7 +276,7 @@ describe('postcss-server', () => {
     beforeEach(() => { stub(fs, 'mkdirSync').throws('Error with no code'); });
     afterEach(() => { fs.mkdirSync.restore(); });
 
-    it('errors when invoking main', async () => {
+    it('errors when invoking main', async() => {
       let error;
 
       try { await invokeMain(); }
