@@ -50,6 +50,7 @@
   "homepage": "https://github.com/wbyoung/babel-plugin-transform-postcss",
   "devDependencies": {
     "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.0",
     "babel-eslint": "^7.1.1",
     "babel-plugin-istanbul": "^4.1.1",
     "babel-plugin-transform-flow-strip-types": "^6.21.0",
