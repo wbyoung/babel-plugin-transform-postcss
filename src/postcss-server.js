@@ -77,7 +77,7 @@ const main = async function main(
         let configPath = path.dirname(cssFile);
 
         if (config) {
-          configPath = path.resolve(configPath);
+          configPath = path.resolve(config);
         }
 
         const { plugins, options: postcssOpts } =
