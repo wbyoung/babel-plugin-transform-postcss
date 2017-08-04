@@ -54,14 +54,15 @@ const launchServer = () => {
 
 const extensions = ['.css'];
 
-const getStylesFromStylesheet = (stylesheetPath: string, file: any): any => {
+const getStylesFromStylesheet = (stylesheetPath: string, file: any,
+  config: any): any => {
   const stylesheetExtension = extname(stylesheetPath);
 
   if (extensions.indexOf(stylesheetExtension) !== -1) {
     launchServer();
     const requiringFile = file.opts.filename;
     const cssFile = resolve(dirname(requiringFile), stylesheetPath);
-    const data = JSON.stringify({ cssFile });
+    const data = JSON.stringify({ cssFile, config });
     const execArgs = [clientExcutable, socketPath, data];
     const result = execFileSync(nodeExecutable, execArgs, {
       env: process.env, // eslint-disable-line no-process-env
@@ -87,7 +88,8 @@ export default function transformPostCSS({ types: t }: any): any {
         }
 
         const [{ value: stylesheetPath }] = args;
-        const tokens = getStylesFromStylesheet(stylesheetPath, file);
+        const { config } = this.opts;
+        const tokens = getStylesFromStylesheet(stylesheetPath, file, config);
 
         if (tokens !== undefined) {
           const expression = path.findParent((test) => (
@@ -115,7 +117,9 @@ export default function transformPostCSS({ types: t }: any): any {
         if (path.node.specifiers.length !== 1) {
           return;
         }
-        const tokens = getStylesFromStylesheet(stylesheetPath, file);
+
+        const { config } = this.opts;
+        const tokens = getStylesFromStylesheet(stylesheetPath, file, config);
 
         if (tokens) {
           const styles = t.objectExpression(
