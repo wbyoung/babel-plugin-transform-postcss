@@ -36,7 +36,7 @@ npm install --save-dev \
   postcss-modules
 ```
 
-Add the trasnform to your babel configuration, i.e. `.babelrc`:
+Add the transform to your babel configuration, i.e. `.babelrc`:
 
 ```json
 {
@@ -44,8 +44,8 @@ Add the trasnform to your babel configuration, i.e. `.babelrc`:
     ["env", { "targets": { "node": "current" }}]
   ],
   "plugins": [
-    "transform-postcss",
-  ],
+    "transform-postcss"
+  ]
 }
 ```
 
@@ -59,6 +59,17 @@ module.exports = (ctx) => ({
     }),
   ],
 });
+```
+
+You can also specify a location to load your `postcss.config.js` from in the options in your Babel configuration, i.e. `.babelrc`:
+```json
+{
+  "plugins": [
+    ["transform-postcss", {
+      "config": "configuration/postcss.config.js"
+    }]
+  ]
+}
 ```
 
 ## Details
