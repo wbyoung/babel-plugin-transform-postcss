@@ -202,7 +202,7 @@ describe('postcss-server', () => {
       beforeEach(async() => {
         response = await sendMessage({
           cssFile: join(__dirname, 'fixtures', 'simple.css'),
-          configFile: join(__dirname, 'fixtures', 'nofile'),
+          config: join('fixtures', 'nofile'),
         });
       });
       beforeEach(closeStderr);

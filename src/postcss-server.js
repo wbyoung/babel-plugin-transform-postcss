@@ -49,7 +49,7 @@ const main = async function main(
     connection.on('end', async(): Promise<void> => {
       try {
         let tokens, cache;
-        const { cssFile } = JSON.parse(data);
+        const { cssFile, config } = JSON.parse(data);
         const cachePath =
           `${path.join(tmpPath, cssFile.replace(/[^a-z]/ig, ''))}.cache`;
         const source = // eslint-disable-next-line no-sync
@@ -73,8 +73,15 @@ const main = async function main(
         const extractModules = (_, resultTokens: any) => {
           tokens = resultTokens;
         };
+
+        let configPath = path.dirname(cssFile);
+
+        if (config) {
+          configPath = path.resolve(config);
+        }
+
         const { plugins, options: postcssOpts } =
-          await loadConfig({ extractModules }, path.dirname(cssFile));
+          await loadConfig({ extractModules }, configPath);
 
         const runner = postcss(plugins);
 

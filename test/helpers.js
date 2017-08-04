@@ -21,7 +21,7 @@ export const transform = (
     presets: [ ['env', { targets: { node: 'current' } }] ],
     plugins: [
       ['../../src/plugin.js', {
-        config: path.join(fixtures, 'postcss.config.js'),
+        config: 'fixtures/postcss.config.js',
       }],
     ],
   }, babelOptionOverrides);
