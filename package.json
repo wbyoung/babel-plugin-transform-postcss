@@ -73,7 +73,7 @@
     "postcss": "^6.0.6"
   },
   "dependencies": {
-    "debug": "^2.6.0",
+    "debug": "^3.0.0",
     "postcss-load-config": "^1.1.0"
   }
 }
