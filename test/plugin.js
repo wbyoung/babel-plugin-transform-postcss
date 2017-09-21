@@ -122,7 +122,9 @@ describe('babel-plugin-transform-postcss', () => {
     let result;
 
     beforeEach(async() => {
-      result = await transform('import.js', babelNoModules, { retainImport: true });
+      result = await transform('import.js', babelNoModules, {
+        retainImport: true,
+      });
     });
 
     it('launches the server', testServerLaunched);
