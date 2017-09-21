@@ -118,6 +118,38 @@ describe('babel-plugin-transform-postcss', () => {
     shouldBehaveLikeSeverIsRunning();
   });
 
+  describe('when transforming import.js with `retainImport: true`', () => {
+    let result;
+
+    beforeEach(async() => {
+      result = await transform('import.js', babelNoModules, { retainImport: true });
+    });
+
+    it('launches the server', testServerLaunched);
+    it('launches a client', () => testClientLaunched('simple.css'));
+    it('compiles correctly', async() => {
+      expect(result).to.eql((await read('import.retain.expected.js')).trim());
+    });
+
+    shouldBehaveLikeSeverIsRunning();
+  });
+
+  describe('when transforming require.js with `retainImport: true`', () => {
+    let result;
+
+    beforeEach(async() => {
+      result = await transform('require.js', {}, { retainImport: true });
+    });
+
+    it('launches the server', testServerLaunched);
+    it('launches a client', () => testClientLaunched('simple.css'));
+    it('compiles correctly', async() => {
+      expect(result).to.eql((await read('require.retain.expected.js')).trim());
+    });
+
+    shouldBehaveLikeSeverIsRunning();
+  });
+
   describe('when transforming nocss.js', () => {
     beforeEach(() => transform('nocss.js'));
 
