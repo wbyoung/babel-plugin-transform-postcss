@@ -75,27 +75,26 @@ const getStylesFromStylesheet = (stylesheetPath: string, file: any,
 };
 
 export default function transformPostCSS({ types: t }: any): any {
-
   return {
     visitor: {
       CallExpression(path: any, { file }: any) {
         const { callee: { name: calleeName }, arguments: args } = path.node;
+        const expression = path.findParent((test) => (
+          test.isVariableDeclaration()
+        ));
 
         if (calleeName !== 'require' ||
             !args.length ||
-            !t.isStringLiteral(args[0])) {
+            !t.isStringLiteral(args[0]) ||
+            !expression) {
           return;
         }
 
         const [{ value: stylesheetPath }] = args;
-        const { config } = this.opts;
+        const { config, retainImport } = this.opts;
         const tokens = getStylesFromStylesheet(stylesheetPath, file, config);
 
         if (tokens !== undefined) {
-          const expression = path.findParent((test) => (
-            test.isVariableDeclaration() ||
-              test.isExpressionStatement()
-          ));
 
           expression.addComment(
             'trailing', ` @related-file ${stylesheetPath}`, true
@@ -109,6 +108,15 @@ export default function transformPostCSS({ types: t }: any): any {
               )
             )
           ));
+
+          if (retainImport) {
+            expression.insertBefore(t.expressionStatement(
+              t.callExpression(
+                t.identifier('require'),
+                [t.stringLiteral(stylesheetPath)]
+              )
+            ));
+          }
         }
       },
       ImportDeclaration(path: any, { file }: any) {
@@ -118,7 +126,7 @@ export default function transformPostCSS({ types: t }: any): any {
           return;
         }
 
-        const { config } = this.opts;
+        const { config, retainImport } = this.opts;
         const tokens = getStylesFromStylesheet(stylesheetPath, file, config);
 
         if (tokens) {
@@ -138,6 +146,13 @@ export default function transformPostCSS({ types: t }: any): any {
           /* eslint-enable new-cap */
           path.addComment('trailing', ` @related-file ${stylesheetPath}`, true);
           path.replaceWith(variableDeclaration);
+
+          if (retainImport) {
+            path.insertBefore(t.importDeclaration(
+              [],
+              t.stringLiteral(stylesheetPath)
+            ));
+          }
         }
       },
     },
