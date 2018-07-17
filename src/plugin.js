@@ -52,11 +52,19 @@ const launchServer = () => {
   process.on('exit', stopServer);
 };
 
-const extensions = ['.css'];
+const defaultExtensions = ['.css'];
 
-const getStylesFromStylesheet = (stylesheetPath: string, file: any,
-  config: any): any => {
+const getStylesFromStylesheet = (
+  stylesheetPath: string,
+  file: any,
+  config: any,
+  configExtensions: string[],
+): any => {
   const stylesheetExtension = extname(stylesheetPath);
+
+  const extensions = Array.isArray(configExtensions)
+    ? configExtensions
+    : defaultExtensions;
 
   if (extensions.indexOf(stylesheetExtension) !== -1) {
     launchServer();
@@ -88,8 +96,13 @@ export default function transformPostCSS({ types: t }: any): any {
         }
 
         const [{ value: stylesheetPath }] = args;
-        const { config } = this.opts;
-        const tokens = getStylesFromStylesheet(stylesheetPath, file, config);
+        const { config, extensions } = this.opts;
+        const tokens = getStylesFromStylesheet(
+          stylesheetPath,
+          file,
+          config,
+          extensions
+        );
 
         if (tokens !== undefined) {
           const expression = path.findParent((test) => (
@@ -118,8 +131,13 @@ export default function transformPostCSS({ types: t }: any): any {
           return;
         }
 
-        const { config } = this.opts;
-        const tokens = getStylesFromStylesheet(stylesheetPath, file, config);
+        const { config, extensions } = this.opts;
+        const tokens = getStylesFromStylesheet(
+          stylesheetPath,
+          file,
+          config,
+          extensions
+        );
 
         if (tokens) {
           const styles = t.objectExpression(
