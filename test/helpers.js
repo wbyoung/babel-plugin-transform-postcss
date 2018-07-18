@@ -13,6 +13,7 @@ export const babelNoModules = {
 export const transform = (
   filename: string,
   babelOptionOverrides: ?{ [string]: mixed },
+  extensions: ?string[],
 ): Promise<string> => {
   const file = path.join(fixtures, filename);
 
@@ -22,6 +23,7 @@ export const transform = (
     plugins: [
       ['../../src/plugin.js', {
         config: 'fixtures/postcss.config.js',
+        extensions,
       }],
     ],
   }, babelOptionOverrides);

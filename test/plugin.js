@@ -118,6 +118,26 @@ describe('babel-plugin-transform-postcss', () => {
     shouldBehaveLikeSeverIsRunning();
   });
 
+  describe('when transforming import.scss.js', () => {
+    let result;
+
+    beforeEach(async() => {
+      result = await transform(
+        'import.scss.js',
+        null,
+        ['.scss']
+      );
+    });
+
+    it('launches the server', testServerLaunched);
+    it('launches a client', () => testClientLaunched('simple.scss'));
+    it('compiles correctly', async() => {
+      expect(result).to.eql((await read('import.scss.expected.js')).trim());
+    });
+
+    shouldBehaveLikeSeverIsRunning();
+  });
+
   describe('when transforming nocss.js', () => {
     beforeEach(() => transform('nocss.js'));
 
