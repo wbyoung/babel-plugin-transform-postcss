@@ -72,6 +72,19 @@ You can also specify a location to load your `postcss.config.js` from in the opt
 }
 ```
 
+By default we look for `.css` files, but you can also specify the extensions we should look for:
+```json
+{
+  "plugins": [
+    ["transform-postcss", {
+      "config": "configuration/postcss.config.js",
+      "extensions": [".scss"]
+    }]
+  ]
+}
+```
+
+
 ## Details
 
 The transform will transform all imports & require statements that have a `.css`
