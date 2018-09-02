@@ -14,6 +14,7 @@ export const transform = (
   filename: string,
   babelOptionOverrides: ?{ [string]: mixed },
   extensions: ?string[],
+  advancedOptions: ?{ [string]: mixed }
 ): Promise<string> => {
   const file = path.join(fixtures, filename);
 
@@ -21,10 +22,10 @@ export const transform = (
     babelrc: false,
     presets: [ ['env', { targets: { node: 'current' } }] ],
     plugins: [
-      ['../../src/plugin.js', {
+      ['../../src/plugin.js', Object.assign({
         config: 'fixtures/postcss.config.js',
         extensions,
-      }],
+      }, advancedOptions)],
     ],
   }, babelOptionOverrides);
 
