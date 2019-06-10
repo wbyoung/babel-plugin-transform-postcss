@@ -74,6 +74,6 @@
   },
   "dependencies": {
     "debug": "^3.0.0",
-    "postcss-load-config": "^1.1.0"
+    "postcss-load-config": "^2.1.0"
   }
 }
