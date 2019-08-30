@@ -119,7 +119,7 @@ const main = async function main(
     server.on('listening', () => {
       const handler = () => {
         fs.unlinkSync(socketPath); // eslint-disable-line no-sync
-		server.close();
+        server.close();
       };
 
       server.on('close', () => {
