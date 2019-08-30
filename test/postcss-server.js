@@ -34,10 +34,13 @@ describe('postcss-server', () => {
   const invokeMain = async() => { server = await main(testSocket, testTmp); };
   const closeServer = async() => {
     await new Promise((resolve: () => void, reject: (Error) => void) => {
-      server.close((err: ?Error) => {
-        if (err) { reject(err); }
-        else { resolve(); }
-      });
+    if (server.listening) {
+    server.close((err: ?Error) => {
+      if (err) { reject(err); }
+      else { resolve(); }
+    });
+    }
+    else { resolve(); }
     });
   };
   const closeStderr = async() => {
