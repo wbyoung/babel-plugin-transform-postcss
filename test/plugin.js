@@ -104,6 +104,18 @@ describe('babel-plugin-transform-postcss', () => {
     shouldBehaveLikeSeverIsRunning();
   });
 
+  describe('when transforming require.no.name.js', () => {
+    beforeEach(() => transform('require.no.name.js', babelNoModules));
+
+    it('does not launch the server', () => {
+      expect(childProcess.spawn).to.not.have.been.called;
+    });
+
+    it('does not launch a client', () => {
+      expect(childProcess.execFileSync).to.not.have.been.called;
+    });
+  });
+
   describe('when transforming import.js', () => {
     let result;
 
@@ -205,6 +217,104 @@ describe('babel-plugin-transform-postcss', () => {
 
     it('compiles correctly', async() => {
       expect(result).to.eql((await read('require.expected.empty.js')).trim());
+    });
+  });
+
+  describe('when keepImport enabled with import.js', () => {
+    let result;
+
+    beforeEach(async() => {
+      result = await transform(
+        'import.js',
+        null,
+        ['.css'],
+        {
+          keepImport: true,
+        }
+      );
+    });
+
+    it('compiles correctly', async() => {
+      expect(result).to.eql((await read('keep.import.expected.js')).trim());
+    });
+  });
+
+  describe('when keepImport enabled with require.js', () => {
+    let result;
+
+    beforeEach(async() => {
+      result = await transform(
+        'require.js',
+        null,
+        ['.css'],
+        {
+          keepImport: true,
+        }
+      );
+    });
+
+    it('compiles correctly', async() => {
+      expect(result).to.eql((await read('keep.require.expected.js')).trim());
+    });
+  });
+
+  describe('when keepImport enabled with import.no.name.js', () => {
+    let result;
+
+    beforeEach(async() => {
+      result = await transform(
+        'import.no.name.js',
+        null,
+        ['.css'],
+        {
+          keepImport: true,
+        }
+      );
+    });
+
+    it('compiles correctly', async() => {
+      expect(result)
+        .to.eql((await read('keep.import.no.name.expected.js')).trim());
+    });
+  });
+
+  describe('when keepImport enabled with require.no.name.js', () => {
+    let result;
+
+    beforeEach(async() => {
+      result = await transform(
+        'require.no.name.js',
+        null,
+        ['.css'],
+        {
+          keepImport: true,
+        }
+      );
+    });
+
+    it('compiles correctly', async() => {
+      expect(result)
+        .to.eql((await read('keep.require.no.name.expected.js')).trim());
+    });
+  });
+
+  describe('when keepImport enabled with require.in.expression.js', () => {
+    let result;
+
+    beforeEach(async() => {
+      result = await transform(
+        'require.in.expression.js',
+        null,
+        ['.css'],
+        {
+          keepImport: true,
+        }
+      );
+    });
+
+    it('compiles correctly', async() => {
+      expect(result)
+        .to.eql((await read('keep.require.in.expression.expected.js')).trim());
     });
   });
 

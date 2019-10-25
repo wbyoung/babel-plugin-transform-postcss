@@ -84,6 +84,40 @@ By default we look for `.css` files, but you can also specify the extensions we 
 }
 ```
 
+## Keeping import
+
+By default, original import declaration in javascript code will be replaced with an object with styles. But you may keep import declarations by turning the option `keepImport` to `true`.
+
+```json
+{
+  "plugins": [
+    ["transform-postcss", {
+      "config": "configuration/postcss.config.js",
+      "extensions": [".scss"],
+      "keepImport": true
+    }]
+  ]
+}
+```
+
+In this case, you will still get the required objects with styles, but import declarations (or require expressions) will be kept above without any assignment expression.
+
+For example, this code:
+
+```js
+import styles from './styles';
+```
+
+```css
+.example { color: cyan; }
+```
+
+Will be transformed to:
+
+```js
+import './styles';
+var styles = {"example":"_example_amfqe_1"};
+```
 
 ## Details
 

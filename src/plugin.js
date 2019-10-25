@@ -27,6 +27,22 @@ const serverExcutable = join(__dirname, 'postcss-server.js');
 
 let server;
 
+/* eslint-disable id-length */
+const findExpressionStatementChild = (path: any, t: any): any => {
+  const parent = path.parentPath;
+
+  if (
+    t.isExpressionStatement(parent) ||
+    t.isProgram(parent) ||
+    t.isBlockStatement(parent)
+  ) {
+    return path;
+  }
+
+  return findExpressionStatementChild(parent, t);
+};
+/* eslint-enable id-length */
+
 const startServer = () => {
   server = spawn(nodeExecutable, [serverExcutable, socketPath, tmpPath], {
     env: process.env, // eslint-disable-line no-process-env
@@ -96,32 +112,61 @@ export default function transformPostCSS({ types: t }: any): any {
         }
 
         const [{ value: stylesheetPath }] = args;
-        const { config, extensions } = this.opts;
-        const tokens = getStylesFromStylesheet(
-          stylesheetPath,
-          file,
-          config,
-          extensions
-        );
+        const { config, extensions, keepImport } = this.opts;
 
-        if (tokens !== undefined) {
-          const expression = path.findParent((test) => (
-            test.isVariableDeclaration() ||
-              test.isExpressionStatement()
-          ));
-
-          expression.addComment(
-            'trailing', ` @related-file ${stylesheetPath}`, true
+        if (!t.isExpressionStatement(path.parent)) {
+          const tokens = getStylesFromStylesheet(
+            stylesheetPath,
+            file,
+            config,
+            extensions
           );
 
-          path.replaceWith(t.objectExpression(
-            Object.keys(tokens).map(
-              (token) => t.objectProperty(
-                t.stringLiteral(token),
-                t.stringLiteral(tokens[token])
+          if (tokens !== undefined) {
+            const finalExpression = t.objectExpression(
+              Object.keys(tokens).map(
+                (token) => t.objectProperty(
+                  t.stringLiteral(token),
+                  t.stringLiteral(tokens[token])
+                )
               )
-            )
-          ));
+            );
+
+            path.replaceWith(finalExpression);
+
+            if (t.isProperty(path.parentPath)) {
+              path.parentPath.addComment(
+                'trailing', ` @related-file ${stylesheetPath}`, true
+              );
+            }
+            else {
+
+              // Add comment
+              const expression = path.findParent((test) => (
+                test.isVariableDeclaration() ||
+                  test.isExpressionStatement()
+              ));
+
+              expression.addComment(
+                'trailing', ` @related-file ${stylesheetPath}`, true
+              );
+            }
+
+            // Keeped `require` will be placed before closest expression
+            // statement child
+            if (keepImport) {
+              findExpressionStatementChild(path, t)
+                .insertBefore(t.expressionStatement(
+                  t.callExpression(
+                    t.identifier('require'),
+                    [t.stringLiteral(stylesheetPath)]
+                  )
+                ));
+            }
+          }
+        }
+        else if (!keepImport) {
+          path.remove();
         }
       },
       ImportDeclaration(path: any, { file }: any) {
@@ -131,7 +176,7 @@ export default function transformPostCSS({ types: t }: any): any {
           return;
         }
 
-        const { config, extensions } = this.opts;
+        const { config, extensions, keepImport } = this.opts;
         const tokens = getStylesFromStylesheet(
           stylesheetPath,
           file,
@@ -153,9 +198,26 @@ export default function transformPostCSS({ types: t }: any): any {
           const variableDeclaration = t.VariableDeclaration('var',
             [t.VariableDeclarator(path.node.specifiers[0].local, styles)]);
 
-          /* eslint-enable new-cap */
-          path.addComment('trailing', ` @related-file ${stylesheetPath}`, true);
-          path.replaceWith(variableDeclaration);
+          if (keepImport) {
+            path.replaceWithMultiple([
+              t.importDeclaration([], t.stringLiteral(stylesheetPath)),
+              variableDeclaration,
+            ]);
+
+            // Add comment directly to the variable declaration
+            variableDeclaration.trailingComments.push({
+              type: 'CommentLine',
+              value: ` @related-file ${stylesheetPath}`,
+            });
+          }
+          else {
+            path.replaceWith(variableDeclaration);
+
+            // Add comment
+            path.addComment(
+              'trailing', ` @related-file ${stylesheetPath}`, true
+            );
+          }
         }
       },
     },
