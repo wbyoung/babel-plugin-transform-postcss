@@ -121,15 +121,21 @@ const main = async function main(
         fs.unlinkSync(socketPath); // eslint-disable-line no-sync
       };
 
+      const termHandler = () => {
+        process.exit(0);
+      };
+
       server.on('close', () => {
         process.removeListener('exit', handler);
-        process.removeListener('SIGINT', handler);
-        process.removeListener('SIGTERM', handler);
+        process.removeListener('SIGINT', termHandler);
+        process.removeListener('SIGTERM', termHandler);
+        process.removeListener('SIGUSR2', termHandler);
       });
 
       process.on('exit', handler);
-      process.on('SIGINT', handler);
-      process.on('SIGTERM', handler);
+      process.on('SIGINT', termHandler);
+      process.on('SIGTERM', termHandler);
+      process.on('SIGUSR2', termHandler);
 
       resolve();
     });

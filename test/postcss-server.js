@@ -66,9 +66,17 @@ describe('postcss-server', () => {
   });
 
   describe('main(...testArgs)', () => {
-    let signintHandlers;
+    let exitHandlers, exitStub, signintHandlers, sigtermHandlers,
+      sigusr2Handlers;
 
-    beforeEach(() => { signintHandlers = process.listeners('SIGINT'); });
+    beforeEach(() => {
+      exitHandlers = process.listeners('exit');
+      signintHandlers = process.listeners('SIGINT');
+      sigtermHandlers = process.listeners('SIGTERM');
+      sigusr2Handlers = process.listeners('SIGUSR2');
+      exitStub = stub(process, 'exit');
+    });
+    afterEach(() => { process.exit.restore(); });
 
     beforeEach(invokeMain);
     afterEach(closeServer);
@@ -77,9 +85,39 @@ describe('postcss-server', () => {
       expect(server.address()).to.eql(testSocket);
     });
 
-    it('observes SIGINT to cleanup server socket', () => {
+    it('observes SIGINT to exit the process', () => {
       const newHandlers = process.listeners('SIGINT')
         .slice(signintHandlers.length);
+
+      expect(newHandlers.length).to.eql(1);
+      newHandlers[0]();
+
+      expect(exitStub).to.have.been.called;
+    });
+
+    it('observes SIGTERM exit the process', () => {
+      const newHandlers = process.listeners('SIGTERM')
+        .slice(sigtermHandlers.length);
+
+      expect(newHandlers.length).to.eql(1);
+      newHandlers[0]();
+
+      expect(exitStub).to.have.been.called;
+    });
+
+    it('observes SIGUSR2 exit the process', () => {
+      const newHandlers = process.listeners('SIGUSR2')
+        .slice(sigusr2Handlers.length);
+
+      expect(newHandlers.length).to.eql(1);
+      newHandlers[0]();
+
+      expect(exitStub).to.have.been.called;
+    });
+
+    it('uses the exit handler to clean up the server socket', () => {
+      const newHandlers = process.listeners('exit')
+        .slice(exitHandlers.length);
 
       expect(newHandlers.length).to.eql(1);
       newHandlers[0]();
